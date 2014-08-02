@@ -123,8 +123,8 @@ query.set("firstName", "john");
 ```
 
 ### RowMappers
-A row mapper defines how a single row from a result set will be mapped to an object. This is basically where you
-define how to extract the data from the result set to populate your object. The simplest way to create a custom 
+A row mapper defines how a single row from a result set maps to an object. This is basically where you
+define how to extract the data from the result set in to your object. The simplest way to create a custom 
 row mapper is by defining an anonymous class that implements the abstract `mapRow(ResultSet)` method.
 ```java
 RowMapper<Person> rowMapper = new RowMapper<Person>(){
@@ -139,6 +139,10 @@ There are two methods for running the query, `execute()` and `executeAll()`. The
 run the query and use the _RowMapper_ to create and return the object created from the first row of the ResultSet. 
 The `executeAll()` method will map each row to an Object and return them in a list.
 
+```java
+Person person = query.execute();
+```
+-or-
 ```java
 List<Person> people = query.executeAll();
 ```
