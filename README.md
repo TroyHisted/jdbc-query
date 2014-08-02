@@ -2,14 +2,18 @@ jdbc-query
 ==========
 [![Build Status](https://travis-ci.org/TroyHisted/jdbc-query.svg?branch=master)](https://travis-ci.org/TroyHisted/jdbc-query)
 
-JDBC query builder supporting named parameters and facilitating a more concise java syntax.
+JDBC query builder that supports named parameters and reduces boilerplate code.
+
+**IMPORTANT: This is beta software, it will have bugs. Do NOT use in a mission critical environment.**
 
 ## Features
 * Named parameters
 * Automatic housekeeping
 * Removes boilerplate
+* Works with POJOs
+* No dependencies
 
-## Sample
+## Example
 
 ```java
 import java.sql.ResultSet;
@@ -40,8 +44,9 @@ public class EmployeeDao {
 
 ```
 
-## Configuration Steps
+## Configuration
 1. Create a class that implements _JdbcConnection_.
+  * This class must implement the `getConnection()` method that simply returns a `java.sql.Connectio`.
 2. Expose the class as an SPI service.
   * Create a file called _com.jdbcquery.JdbcConnector_ in your _META-INF_ folder.
   * In that file specify the fully qualified name of your _JdbcConnection_ implementation.
