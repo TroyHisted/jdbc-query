@@ -1,12 +1,13 @@
 jdbc-query
 ==========
+[![Build Status](https://travis-ci.org/TroyHisted/jdbc-query.svg?branch=master)](https://travis-ci.org/TroyHisted/jdbc-query)
 
-JDBC query builder supporting named parameters and facilitating a more concise syntax.
+JDBC query builder supporting named parameters and facilitating a more concise java syntax.
 
 ## Features
-* Removes boilerplate
 * Named parameters
 * Automatic housekeeping
+* Removes boilerplate
 
 ## Sample
 
@@ -60,9 +61,6 @@ import javax.sql.DataSource;
 import com.jdbcquery.DaoException;
 import com.jdbcquery.JdbcConnector;
 
-/**
- * Implementation of an MySql database connection.
- */
 public class MySqlConnection implements JdbcConnector {
 
 	public Connection getConnection() throws SQLException {
