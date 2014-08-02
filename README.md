@@ -134,5 +134,15 @@ There are two methods for running the query, `execute()` and `executeAll()`. The
 run the query and use the _RowMapper_ to create and return the object created from the first row of the ResultSet. 
 The `executeAll()` method will map each row to an Object and return them in a list.
 
+```java
+List<Person> people = query.executeAll();
+```
+
 ## License
 [Beerware](http://en.wikipedia.org/wiki/Beerware)
+
+### TODO
+* Implement/Test Insert/Update statements
+* Handle execute batch
+* Add the remaining setX methods
+* Improve the connection clean up
