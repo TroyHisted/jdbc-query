@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Represents a connection to a database.
@@ -47,6 +48,19 @@ public class JdbcConnection {
 	 */
 	PreparedStatement prepareStatement(String aStatement) throws SQLException {
 		return this.connection.prepareStatement(aStatement);
+	}
+
+	/**
+	 * Prepares a statement using the established connection.
+	 *
+	 * @param aStatement
+	 *            the statement to prepare
+	 * @return the prepared statement
+	 * @throws SQLException
+	 *             error building prepared statement
+	 */
+	PreparedStatement prepareStatementWithGeneratedKeys(String aStatement) throws SQLException {
+		return this.connection.prepareStatement(aStatement, Statement.RETURN_GENERATED_KEYS);
 	}
 
 	/**

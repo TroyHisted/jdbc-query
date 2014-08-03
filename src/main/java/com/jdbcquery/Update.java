@@ -1,22 +1,16 @@
 package com.jdbcquery;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
- * Represents an SQL statement.
- *
- * <p>
- * The named parameter must be terminated by either a space, comma, or a right paren.
+ * Represents an SQL update statement.
  *
  * @author Troy Histed
- *
- * @param <T>
- *            The object type that can be queried for
  */
-public class Update {
+public class Update extends Statement {
 
 	private static final NamedStatementParserStrategy STATEMENT_PARSER = new NamedStatementParserStrategy();
 
@@ -26,25 +20,13 @@ public class Update {
 	private final List<String> parameters;
 
 	/**
-	 * Constructs a statement and performs initialization.
-	 *
-	 * @param aStatement
-	 *            the statement to be executed
-	 * @param aConnection
-	 *            an enum representing the connection to use
-	 */
-	public Update(String aStatement, Enum<?> aConnection) {
-		this(aStatement, aConnection.name());
-	}
-
-	/**
 	 * Constructs an update statement and performs initialization.
 	 *
 	 * @param aStatement
 	 *            the statement to be executed
 	 */
 	public Update(String aStatement) {
-		this(aStatement, (String) null);
+		this(aStatement, null);
 	}
 
 	/**
@@ -55,15 +37,16 @@ public class Update {
 	 * @param aConnection
 	 *            the name of the connection to use
 	 */
-	public Update(String aStatement, String aConnectionName) {
+	public Update(String aStatement, String aConnection) {
 
 		this.statement = aStatement;
 		final ParsedNamedStatement preparedStatement = Update.STATEMENT_PARSER.prepareNamedStatement(aStatement);
 		this.parameters = preparedStatement.getParameters();
 
 		try {
-			this.connection = JdbcConnection.connect(aConnectionName);
-			this.preparedStatement = this.connection.prepareStatement(preparedStatement.getStatement());
+			this.connection = JdbcConnection.connect(aConnection);
+			this.preparedStatement = this.connection.prepareStatementWithGeneratedKeys(
+					preparedStatement.getStatement());
 		} catch (final RuntimeException e) {
 			if (this.connection != null) {
 				this.connection.cleanUp();
@@ -80,18 +63,27 @@ public class Update {
 	/**
 	 * Executes the statement.
 	 *
-	 * @return the number of records updated
+	 * @return the auto-generated key or, if no keys were generated, the number of records updated
 	 */
 	public int execute() {
+		ResultSet resultSet = null;
 		try {
-			return this.preparedStatement.executeUpdate();
+			final int updateCount = this.preparedStatement.executeUpdate();
+			resultSet = this.preparedStatement.getGeneratedKeys();
+			if (resultSet.next()) {
+				return resultSet.getInt(1);
+			}
+			return updateCount;
 		} catch (final SQLException e) {
 			throw new DaoException("Error executing : " + this, e);
 		} finally {
-			this.connection.cleanUp();
+			this.connection.cleanUp(resultSet);
 		}
 	}
 
+	/**
+	 * Adds a set of parameters to this objects batch of commands.
+	 */
 	public void addBatch() {
 		try {
 			this.preparedStatement.addBatch();
@@ -101,391 +93,138 @@ public class Update {
 		}
 	}
 
-	public void executeBatch() {
+	/**
+	 * Executes the batch statements that have been added to this object.
+	 *
+	 * @return array containing the number of records updated for each batch statement
+	 */
+	public int[] executeBatch() {
+		ResultSet resultSet = null;
 		try {
-			this.preparedStatement.executeBatch();
+			final int[] updateCount = this.preparedStatement.executeBatch();
+
+			resultSet = this.preparedStatement.getGeneratedKeys();
+			if (resultSet.next()) {
+				final int [] generatedKeys = new int[updateCount.length];
+				int i = 0;
+				generatedKeys[i] = resultSet.getInt(1);
+				i++;
+				while(resultSet.next()) {
+					generatedKeys[i] = resultSet.getInt(1);
+					i++;
+				}
+				return generatedKeys;
+			}
+			return updateCount;
 		} catch (final SQLException e) {
 			throw new DaoException("Error executing batch: " + this, e);
 		} finally {
-			this.connection.cleanUp();
+			this.connection.cleanUp(resultSet);
 		}
 	}
 
 	/**
-	 * Sets a string into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(int index, String value) {
-		try {
-			this.preparedStatement.setString(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, String aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a string into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(String name, String value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setString(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, int aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * <p>
-	 * Sets an int into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(int index, int value) {
-		try {
-			this.preparedStatement.setInt(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, long aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * <p>
-	 * Sets an int into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(String name, int value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setInt(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, short aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a long into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(int index, long value) {
-		try {
-			this.preparedStatement.setLong(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, float aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a long into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(String name, long value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setLong(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, double aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a short into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(int index, short value) {
-		try {
-			this.preparedStatement.setShort(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, boolean aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a short into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(String name, short value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setShort(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update set(String aName, java.util.Date aValue) {
+		return (Update) super.set(aName, aValue);
 	}
 
 	/**
-	 * Sets a float into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(int index, float value) {
-		try {
-			this.preparedStatement.setFloat(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
+	@Override
+	public Update setNull(String aName, int aSqlType) {
+		return (Update) super.set(aName, aSqlType);
 	}
 
 	/**
-	 * Sets a float into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
+	 * {@inheritDoc}
 	 */
-	public Update set(String name, float value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setFloat(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a double into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(int index, double value) {
-		try {
-			this.preparedStatement.setDouble(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a double into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(String name, double value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setDouble(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a boolean into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(int index, boolean value) {
-		try {
-			this.preparedStatement.setBoolean(index, value);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a boolean into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(String name, boolean value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setBoolean(i + 1, value);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a Date into the prepared statement at the specified parameter index.
-	 *
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(int index, java.util.Date value) {
-		try {
-			this.preparedStatement.setTimestamp(index, new Timestamp(value.getTime()));
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets a Date into the prepared statement using the specified parameter name.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update set(String name, java.util.Date value) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setTimestamp(i + 1, new Timestamp(value.getTime()));
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting : " + value, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets the specified parameter index to be null.
-	 *
-	 * @param index
-	 *            the index of the parameter to set the value on
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update setNull(int index, int sqlType) {
-		try {
-			this.preparedStatement.setNull(index, sqlType);
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting null: " + sqlType, e);
-		}
-		return this;
-	}
-
-	/**
-	 * Sets the specified parameter name to have a null value.
-	 *
-	 * @param name
-	 *            the name of the parameter to set
-	 * @param value
-	 *            the value to set
-	 * @return The update (so that method calls can be chained);
-	 */
-	public Update setNull(String name, int sqlType) {
-		try {
-			for (int i = 0; i < this.parameters.size(); i++) {
-				if (this.parameters.get(i).equals(name)) {
-					this.preparedStatement.setNull(i + 1, sqlType);
-				}
-			}
-		} catch (final SQLException e) {
-			this.connection.cleanUp();
-			throw new DaoException("Error setting null: " + sqlType, e);
-		}
-		return this;
-	}
-
-	/**
-	 * @return the preparedStatement
-	 */
+	@Override
 	public PreparedStatement getPreparedStatement() {
 		return this.preparedStatement;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected List<String> getParameters() {
+		return this.parameters;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected JdbcConnection getConnection() {
+		return this.connection;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		return "Update [statement=" + this.statement + ", connection=" + this.connection + ", preparedStatement="
-				+ this.preparedStatement + ", parameters=" + this.parameters + "]";
+		return "Update [statement=" + this.statement + ", connection=" + this.connection
+				+ ", preparedStatement=" + this.preparedStatement + ", parameters=" + this.parameters + "]";
 	}
 }
