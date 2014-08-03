@@ -63,17 +63,32 @@ public class Update extends Statement {
 	/**
 	 * Executes the statement.
 	 *
-	 * @return the auto-generated key or, if no keys were generated, the number of records updated
+	 * @return the number of records updated
 	 */
 	public int execute() {
+		try {
+			return this.preparedStatement.executeUpdate();
+		} catch (final SQLException e) {
+			throw new DaoException("Error executing : " + this, e);
+		} finally {
+			this.connection.cleanUp();
+		}
+	}
+
+	/**
+	 * Executes the statement.
+	 *
+	 * @return the auto-generated key
+	 */
+	public long executeAndReturnKey() {
 		ResultSet resultSet = null;
 		try {
 			final int updateCount = this.preparedStatement.executeUpdate();
 			resultSet = this.preparedStatement.getGeneratedKeys();
 			if (resultSet.next()) {
-				return resultSet.getInt(1);
+				return resultSet.getLong(1);
 			}
-			return updateCount;
+			throw new DaoException("No key was generated for " + this);
 		} catch (final SQLException e) {
 			throw new DaoException("Error executing : " + this, e);
 		} finally {
@@ -99,23 +114,38 @@ public class Update extends Statement {
 	 * @return array containing the number of records updated for each batch statement
 	 */
 	public int[] executeBatch() {
+		try {
+			return this.preparedStatement.executeBatch();
+		} catch (final SQLException e) {
+			throw new DaoException("Error executing batch: " + this, e);
+		} finally {
+			this.connection.cleanUp();
+		}
+	}
+
+	/**
+	 * Executes the batch statements that have been added to this object.
+	 *
+	 * @return array containing the auto generated keys for each batch statement
+	 */
+	public long[] executeBatchAndReturnKeys() {
 		ResultSet resultSet = null;
 		try {
 			final int[] updateCount = this.preparedStatement.executeBatch();
 
 			resultSet = this.preparedStatement.getGeneratedKeys();
 			if (resultSet.next()) {
-				final int [] generatedKeys = new int[updateCount.length];
+				final long[] generatedKeys = new long[updateCount.length];
 				int i = 0;
-				generatedKeys[i] = resultSet.getInt(1);
+				generatedKeys[i] = resultSet.getLong(1);
 				i++;
 				while(resultSet.next()) {
-					generatedKeys[i] = resultSet.getInt(1);
+					generatedKeys[i] = resultSet.getLong(1);
 					i++;
 				}
 				return generatedKeys;
 			}
-			return updateCount;
+			throw new DaoException("No key was generated for " + this);
 		} catch (final SQLException e) {
 			throw new DaoException("Error executing batch: " + this, e);
 		} finally {
