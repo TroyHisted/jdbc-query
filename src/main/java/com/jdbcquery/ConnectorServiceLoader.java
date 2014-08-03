@@ -4,7 +4,7 @@ import java.util.ServiceLoader;
 
 /**
  * Handles loading the designated DaoConnector.
- * 
+ *
  * @author Troy Histed
  */
 public class ConnectorServiceLoader {
@@ -14,13 +14,16 @@ public class ConnectorServiceLoader {
 	/**
 	 * Returns the first DaoConnector that is available through the Service
 	 * Provider Interface.
-	 * 
+	 * @param aConnectionName
+	 *
 	 * @return connection loader
 	 */
-	public static JdbcConnector getConnector() {
+	public static JdbcConnector getConnector(String aConnectionName) {
 		for (final JdbcConnector connector : ConnectorServiceLoader.CONNECTION_LOADER) {
-			return connector;
+			if (aConnectionName == null || aConnectionName.equals(connector.getName())) {
+				return connector;
+			}
 		}
-		throw new IllegalStateException("No DaoConnector defined as a provided service.");
+		throw new IllegalStateException("No DaoConnector defined as a provided service. " + aConnectionName);
 	}
 }
