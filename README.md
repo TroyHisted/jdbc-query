@@ -122,7 +122,7 @@ Select<String> statement = Query.forString("SELECT name FROM table");
 ```
 (The static `forString` method includes a default _RowMapper_ for strings)
 
-### Specify a database
+### Specify a database (optional)
 If you've configured more than one JdbcConnector you'll need to define which connection to use for each 
 Statement. To do this, simply add the connection name as the last argument to any of the Statement constructors
 or to the static constructors. The String must match the string that is returned from the getName method of the 
@@ -148,12 +148,13 @@ SELECT lastName FROM people WHERE firstName = UPPERCASE(:firstName)
 
 ### Parameter values
 Assigning values to the parameters is done on the query object through the many _setX_ methods. The parameter 
-name is the first argument followed by the value. If a parameter name is declared multiple times in the query, 
-the value only needs to be set once. 
+name is the first argument followed by the value. 
 
 ```java
 statement.set("firstName", "john");
 ```
+
+Note: _If a parameter name is declared multiple times in the query, the value only needs to be set once. _
 
 ### RowMappers
 A row mapper defines how a single row from a result set maps to an object. This is basically where you
@@ -181,17 +182,22 @@ List<Person> people = query.executeAll();
 ```
 
 ### Executing an Update statement
-There are four methods for running the select, `execute()`, `executeAndReturnKey()`, 
+There are four methods for running the update, `execute()`, `executeAndReturnKey()`, 
 `executeBatch()` and `executeBatchAndReturnKeys()`. The `execute()` and `executeBatch()` 
 methods will execute the statement or batch of statements and return the number of records that were updated.
 The `...AndReturnKey` methods will return any auto-generated keys instead of the number of records updated.
 The keys will only be available for _INSERT_ statements where one of the columns is set to auto-increment.
 
 ```java
-Update update = Query.update("INSERT INTO people(name, birthDate, description) VALUES(:name, :birthDate, :description)");
+Query.update("DELETE FROM people WHERE personId = :personId").set("personId", 42).execute();
+```
 
-for (long i = 0; i < 10; i++) {
-	update.set("name", "person" + i);
+```java
+Update update = Query.update(
+	"INSERT INTO people(name, birthDate, description) VALUES(:name, :birthDate, :description)");
+
+for (int i = 0; i < 10; i++) {
+	update.set("name", "person_" + i);
 	update.set("birthDate", new Date());
 	update.set("description", (String) null);
 	update.addBatch();
@@ -206,3 +212,4 @@ final long[] keys = update.executeBatchAndReturnKeys();
 ### TODO
 * Add the remaining setX methods
 * Improve the connection clean up
+* Write more tests
