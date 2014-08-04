@@ -4,7 +4,7 @@ jdbc-query
 
 JDBC query builder that supports named parameters and reduces boilerplate code.
 
-**IMPORTANT: This is beta software, it will have bugs. Do NOT use in a mission critical environment.**
+**IMPORTANT: This is beta software, there will be bugs.** 
 
 ## Features
 * Named parameters
@@ -21,8 +21,8 @@ import java.util.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.jdbcquery.Query;
-import com.jdbcquery.RowMapper;
+import org.jdbcquery.Query;
+import org.jdbcquery.RowMapper;
 
 public class EmployeeDao {
 
@@ -59,7 +59,7 @@ public class EmployeeDao {
   * This class must implement the `getName()` method that returns a custom name for the connection. This may 
   be useful if there are multiple databases.
 2. Expose the class as an SPI service.
-  * Create a file called _com.jdbcquery.JdbcConnector_ in your _META-INF_ folder.
+  * Create a file called _org.jdbcquery.JdbcConnector_ in your _META-INF_ folder.
   * In that file specify the fully qualified name of your _JdbcConnection_ implementation.
  
 ### Sample JdbcConnection implementation
@@ -74,8 +74,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.jdbcquery.DaoException;
-import com.jdbcquery.JdbcConnector;
+import org.jdbcquery.DaoException;
+import org.jdbcquery.JdbcConnector;
 
 public class MySqlConnection implements JdbcConnector {
 
@@ -147,14 +147,14 @@ SELECT lastName FROM people WHERE firstName = UPPERCASE(:firstName)
 ```  
 
 ### Parameter values
-Assigning values to the parameters is done on the query object through the many _setX_ methods. The parameter 
-name is the first argument followed by the value. 
+Assigning values to the parameters is done on the Statement object through the many _setX_ methods. The parameter 
+name is the first argument, followed by the value. 
 
 ```java
 statement.set("firstName", "john");
 ```
 
-Note: _If a parameter name is declared multiple times in the query, the value only needs to be set once. _
+Note: _If a parameter name is declared multiple times in the query, the value only needs to be set once._
 
 ### RowMappers
 A row mapper defines how a single row from a result set maps to an object. This is basically where you
@@ -207,7 +207,7 @@ final long[] keys = update.executeBatchAndReturnKeys();
 ```
 
 ## License
-[Beerware](http://en.wikipedia.org/wiki/Beerware)
+[Apache License, Version 2.0](http://opensource.org/licenses/Apache-2.0)
 
 ### TODO
 * Add the remaining setX methods

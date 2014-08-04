@@ -1,15 +1,21 @@
-package com.jdbcquery;
+package org.jdbcquery;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jdbcquery.NamedStatementParserStrategy;
+import org.jdbcquery.ParsedNamedStatement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
-public class QueryTest {
+/**
+ * Test the sql statement parser.
+ *
+ * @author Troy Histed
+ */
+public class NamedStatementParserStrategyTest {
 
 	private final NamedStatementParserStrategy parser = new NamedStatementParserStrategy();
 	private String statement;

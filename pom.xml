@@ -2,9 +2,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.jdbcquery</groupId>
+  <groupId>org.jdbcquery</groupId>
   <artifactId>jdbc-query</artifactId>
-  <version>0.2-BETA</version>
+  <version>0.3-Snapshot</version>
   <packaging>jar</packaging>
 
   <name>jdbc-query</name>
