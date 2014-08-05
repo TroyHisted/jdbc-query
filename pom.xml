@@ -4,7 +4,7 @@
 
   <groupId>org.jdbcquery</groupId>
   <artifactId>jdbc-query</artifactId>
-  <version>0.3-Snapshot</version>
+  <version>0.4-Snapshot</version>
   <packaging>jar</packaging>
 
   <name>jdbc-query</name>
@@ -15,6 +15,11 @@
   </properties>
 
   <dependencies>
+	<dependency>
+		<groupId>commons-beanutils</groupId>
+		<artifactId>commons-beanutils</artifactId>
+		<version>1.8.3</version>
+	</dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

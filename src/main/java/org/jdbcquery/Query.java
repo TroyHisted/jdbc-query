@@ -107,6 +107,35 @@ public final class Query {
 	}
 
 	/**
+	 * Static constructor for building a select for an Object.
+	 *
+	 * @param aStatement
+	 *            the select statement to execute
+	 * @param aBeanRowMapper
+	 *            the bean row mapping to use
+	 * @return the Select
+	 */
+	public static <T> Select<T> forBean(String aStatement, BeanRowMapper<T> aBeanRowMapper) {
+		return new Select<T>(aStatement, aBeanRowMapper);
+	}
+
+	/**
+	 * Static constructor for building a select for an Object.
+	 *
+	 * @param aStatement
+	 *            the select statement to execute
+	 * @param aBeanRowMapper
+	 *            the bean row mapping to use
+	 * @param aConnectionName
+	 *            the connection name to use
+	 * @return the Select
+	 */
+	public static <T> Select<T> forBean(String aStatement, BeanRowMapper<T> aBeanRowMapper,
+			String aConnectionName) {
+		return new Select<T>(aStatement, aBeanRowMapper, aConnectionName);
+	}
+
+	/**
 	 * Static constructor for building a select for an Integer.
 	 *
 	 * @param aStatement

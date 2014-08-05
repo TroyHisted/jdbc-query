@@ -13,7 +13,7 @@ JDBC query builder that supports named parameters and reduces boilerplate code.
 * Works with POJOs
 * No dependencies
 
-## Example
+## Examples
 
 ```java
 import java.util.Date;
@@ -156,7 +156,7 @@ statement.set("firstName", "john");
 
 Note: _If a parameter name is declared multiple times in the query, the value only needs to be set once._
 
-### RowMappers
+### RowMapper
 A row mapper defines how a single row from a result set maps to an object. This is basically where you
 define how to extract the data from the result set in to your object. The simplest way to create a custom 
 row mapper is by defining an anonymous class that implements the abstract `mapRow(ResultSet)` method.
@@ -168,6 +168,34 @@ RowMapper<Person> rowMapper = new RowMapper<Person>(){
 		return person;
 	}};
 ```
+
+### BeanRowMapper
+A bean row mapper is a specialized row mapper that uses BeanUtils to map the result set to the object based
+on treating the column names as bean properties. The BeanRowMapper comes with an implementation of 
+`mapRow(ResultSet)`, but requires the implementation of a `newBeanInstance()` method which should
+return a new instance of the bean you're trying to map to. The BeanRowMapper also includes a convenient static 
+`forClass(Class<T>)` method that creates a special BeanRowMapper using the getInstance() method of the
+specified class to implement the newBeanInstance() method.
+
+```java
+return Query.forBean(
+		"    SELECT "
+		+ "    city, "
+		+ "    stateAbbreviation, "
+		+ "    zip, "
+		+ "    latitude AS 'coordinates.latitude', "
+		+ "    longitude AS 'coordinates.longitude' "
+		+ "  FROM geo_location "
+		+ "  WHERE zip = :zip",
+		BeanRowMapper.forClass(Location.class))
+	.set("zip", aZipCode)
+	.execute();
+```
+
+Note: _Since this uses BeanUtils, it supports setting nested properties(as in the coordinates.latitude in the 
+example), however the label must be wrapped in single quotes because the dot character would otherwise render
+the sql invalid._
+
 ### Executing a Select statement
 There are two methods for running the select, `execute()` and `executeAll()`. The `execute()` method 
 will run the select and use the _RowMapper_ to create and return the object created from the first row of the 
