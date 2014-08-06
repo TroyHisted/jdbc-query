@@ -11,7 +11,7 @@ JDBC query builder that supports named parameters and reduces boilerplate code.
 * Automatic housekeeping
 * Removes boilerplate
 * Works with POJOs
-* No dependencies
+* Works with JavaBeans
 
 ## Examples
 
@@ -153,8 +153,25 @@ name is the first argument, followed by the value.
 ```java
 statement.set("firstName", "john");
 ```
-
 Note: _If a parameter name is declared multiple times in the query, the value only needs to be set once._
+
+The `setBean(Object)` method is a special setter that takes a JavaBean and sets any of its properties into 
+the statement. So invoking setBean on a Person object that has a "name" property would be equivalent to calling
+set("name", person.getName()). Only the properties that actually match a parameter name will be set. 
+```java
+final Integer count = Query.forInteger(
+		"SELECT count(*) "
+		+ " FROM geo_location "
+		+ " WHERE zip = :zip"
+		+ "   AND stateAbbreviation = :stateAbbreviation"
+		+ "   AND city = :city"
+		+ "   AND latitude = :coordinates.latitude"
+		+ "   AND longitude = :coordinates.longitude")
+	.setBean(location)
+	.execute();
+```
+Note: _This uses BeanUtils which doesn't handle null object references for nested properties very well, so use
+the nested property syntax with caution._
 
 ### RowMapper
 A row mapper defines how a single row from a result set maps to an object. This is basically where you
@@ -170,8 +187,8 @@ RowMapper<Person> rowMapper = new RowMapper<Person>(){
 ```
 
 ### BeanRowMapper
-A bean row mapper is a specialized row mapper that uses BeanUtils to map the result set to the object based
-on treating the column names as bean properties. The BeanRowMapper comes with an implementation of 
+A bean row mapper is a specialized row mapper that uses BeanUtils to map the result set to the object by
+treating the column names as bean properties. The BeanRowMapper comes with an implementation of 
 `mapRow(ResultSet)`, but requires the implementation of a `newBeanInstance()` method which should
 return a new instance of the bean you're trying to map to. The BeanRowMapper also includes a convenient static 
 `forClass(Class<T>)` method that creates a special BeanRowMapper using the getInstance() method of the
@@ -241,3 +258,5 @@ final long[] keys = update.executeBatchAndReturnKeys();
 * Add the remaining setX methods
 * Improve the connection clean up
 * Write more tests
+* Batch selects
+* Support mapping multiple rows to a single object

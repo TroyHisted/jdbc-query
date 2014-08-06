@@ -15,10 +15,13 @@
  */
 package org.jdbcquery;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtilsBean;
 
 /**
  * Represents an SQL statement.
@@ -248,5 +251,38 @@ public abstract class Statement {
 			throw new DaoException("Error setting " + aName + " of type " + aSqlType + " to null", e);
 		}
 		return this;
+	}
+
+	/**
+	 * Sets all of the bean properties into the prepared statement using the bean property name as the parameter
+	 * name.
+	 *
+	 * @param aJavaBean
+	 *            the java bean to use
+	 * @return the statement (for method chaining)
+	 */
+	public Statement setBean(Object aJavaBean) {
+
+		final PropertyUtilsBean propertyUtils = new PropertyUtilsBean();
+
+		try {
+			for (int i = 0; i < this.getParameters().size(); i++) {
+				if (propertyUtils.isReadable(aJavaBean, this.getParameters().get(i))) {
+					final Object value = propertyUtils.getNestedProperty(aJavaBean, this.getParameters().get(i));
+					this.getPreparedStatement().setObject(i + 1, value);
+				}
+			}
+		} catch (final SQLException e) {
+			this.getConnection().cleanUp();
+			throw new DaoException("Error", e);
+		} catch (final IllegalAccessException e) {
+			throw new DaoException("Error getting bean properties from " + aJavaBean, e);
+		} catch (final InvocationTargetException e) {
+			throw new DaoException("Error getting bean properties from " + aJavaBean, e);
+		} catch (final NoSuchMethodException e) {
+			throw new DaoException("Error getting bean properties from " + aJavaBean, e);
+		}
+		return this;
+
 	}
 }

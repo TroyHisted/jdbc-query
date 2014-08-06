@@ -15,6 +15,7 @@
  */
 package org.jdbcquery;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -65,19 +66,46 @@ public class Select<T> extends Statement {
 	public Select(String aSelect, RowMapper<T> aRowMapper, String aConnectionName) {
 
 		this.statement = aSelect;
+		this.rowMapper = aRowMapper;
 		final ParsedNamedStatement preparedSelect = Select.STATEMENT_PARSER.prepareNamedStatement(aSelect);
 		this.parameters = preparedSelect.getParameters();
 
 		try {
 			this.connection = JdbcConnection.connect(aConnectionName);
 			this.preparedStatement = this.connection.prepareStatement(preparedSelect.getStatement());
-			this.rowMapper = aRowMapper;
 		} catch (final RuntimeException e) {
 			this.connection.cleanUp();
 			throw e;
 		} catch (final SQLException e) {
 			this.connection.cleanUp();
 			throw new DaoException("Error occured while creating connection to datasource.");
+		}
+	}
+
+	/**
+	 * Constructs a select and performs initialization.
+	 *
+	 * @param aSelect
+	 *            the select to be executed
+	 * @param aRowMapper
+	 *            the row mapping to use
+	 * @param aConnection
+	 *            the connection to use
+	 */
+	public Select(String aSelect, RowMapper<T> aRowMapper, Connection aConnection) {
+
+		this.statement = aSelect;
+		this.rowMapper = aRowMapper;
+		this.connection = new JdbcConnection(aConnection);
+		
+		final ParsedNamedStatement preparedSelect = Select.STATEMENT_PARSER.prepareNamedStatement(aSelect);
+		this.parameters = preparedSelect.getParameters();
+
+		try {
+			this.preparedStatement = this.connection.prepareStatement(preparedSelect.getStatement());
+		} catch (final SQLException e) {
+			this.connection.cleanUp();
+			throw new DaoException("Error occured while preparing statement: " + aSelect, e);
 		}
 	}
 
@@ -224,6 +252,15 @@ public class Select<T> extends Statement {
 	@Override
 	public Select<T> setNull(String aName, int aSqlType) {
 		return (Select<T>) super.set(aName, aSqlType);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Select<T> setBean(Object aJavaBean) {
+		return (Select<T>) super.setBean(aJavaBean);
 	}
 
 	/**

@@ -15,6 +15,7 @@
  */
 package org.jdbcquery;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +42,7 @@ public class Update extends Statement {
 	 *            the statement to be executed
 	 */
 	public Update(String aStatement) {
-		this(aStatement, null);
+		this(aStatement, (String) null);
 	}
 
 	/**
@@ -49,19 +50,20 @@ public class Update extends Statement {
 	 *
 	 * @param aStatement
 	 *            the statement to be executed
-	 * @param aConnection
+	 * @param aConnectionName
 	 *            the name of the connection to use
 	 */
-	public Update(String aStatement, String aConnection) {
+	public Update(String aStatement, String aConnectionName) {
 
 		this.statement = aStatement;
+		
 		final ParsedNamedStatement preparedStatement = Update.STATEMENT_PARSER.prepareNamedStatement(aStatement);
 		this.parameters = preparedStatement.getParameters();
 
 		try {
-			this.connection = JdbcConnection.connect(aConnection);
-			this.preparedStatement = this.connection.prepareStatementWithGeneratedKeys(
-					preparedStatement.getStatement());
+			this.connection = JdbcConnection.connect(aConnectionName);
+			this.preparedStatement = this.connection.prepareStatementWithGeneratedKeys(preparedStatement
+					.getStatement());
 		} catch (final RuntimeException e) {
 			if (this.connection != null) {
 				this.connection.cleanUp();
@@ -72,6 +74,33 @@ public class Update extends Statement {
 				this.connection.cleanUp();
 			}
 			throw new DaoException("Error creating connection and preparing statement: " + aStatement, e);
+		}
+	}
+
+	/**
+	 * Constructs an update statement and performs initialization.
+	 *
+	 * @param aStatement
+	 *            the statement to be executed
+	 * @param aConnection
+	 *            the connection to use
+	 */
+	public Update(String aStatement, Connection aConnection) {
+
+		this.statement = aStatement;
+		this.connection = new JdbcConnection(aConnection);
+		
+		final ParsedNamedStatement preparedStatement = Update.STATEMENT_PARSER.prepareNamedStatement(aStatement);
+		this.parameters = preparedStatement.getParameters();
+
+		try {
+			this.preparedStatement = this.connection.prepareStatementWithGeneratedKeys(preparedStatement
+					.getStatement());
+		} catch (final SQLException e) {
+			if (this.connection != null) {
+				this.connection.cleanUp();
+			}
+			throw new DaoException("Error preparing statement: " + aStatement, e);
 		}
 	}
 
@@ -154,7 +183,7 @@ public class Update extends Statement {
 				int i = 0;
 				generatedKeys[i] = resultSet.getLong(1);
 				i++;
-				while(resultSet.next()) {
+				while (resultSet.next()) {
 					generatedKeys[i] = resultSet.getLong(1);
 					i++;
 				}
@@ -238,6 +267,14 @@ public class Update extends Statement {
 	@Override
 	public Update setNull(String aName, int aSqlType) {
 		return (Update) super.set(aName, aSqlType);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Update setBean(Object aJavaBean) {
+		return (Update) super.setBean(aJavaBean);
 	}
 
 	/**

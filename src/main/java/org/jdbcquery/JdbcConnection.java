@@ -36,7 +36,7 @@ public class JdbcConnection {
 	 * @param aConnection
 	 *            the SQL connection to use
 	 */
-	private JdbcConnection(Connection aConnection) {
+	JdbcConnection(Connection aConnection) {
 		this.connection = aConnection;
 	}
 
