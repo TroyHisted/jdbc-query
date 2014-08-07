@@ -78,7 +78,7 @@ public class Select<T> extends Statement {
 			throw e;
 		} catch (final SQLException e) {
 			this.connection.cleanUp();
-			throw new DaoException("Error occured while creating connection to datasource.");
+			throw new DaoException("Error occured while creating connection to datasource.", e);
 		}
 	}
 

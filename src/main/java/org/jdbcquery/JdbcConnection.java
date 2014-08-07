@@ -29,6 +29,7 @@ import java.sql.Statement;
 public class JdbcConnection {
 
 	private Connection connection = null;
+	private PreparedStatement preparedStatement = null;
 
 	/**
 	 * Constructs a DaoConnection with an SQL connection object.
@@ -62,7 +63,8 @@ public class JdbcConnection {
 	 *             error building prepared statement
 	 */
 	PreparedStatement prepareStatement(String aStatement) throws SQLException {
-		return this.connection.prepareStatement(aStatement);
+		this.preparedStatement = this.connection.prepareStatement(aStatement);
+		return this.preparedStatement;
 	}
 
 	/**
@@ -75,7 +77,8 @@ public class JdbcConnection {
 	 *             error building prepared statement
 	 */
 	PreparedStatement prepareStatementWithGeneratedKeys(String aStatement) throws SQLException {
-		return this.connection.prepareStatement(aStatement, Statement.RETURN_GENERATED_KEYS);
+		this.preparedStatement = this.connection.prepareStatement(aStatement, Statement.RETURN_GENERATED_KEYS);
+		return this.preparedStatement;
 	}
 
 	/**
@@ -88,6 +91,14 @@ public class JdbcConnection {
 			}
 		} catch (final SQLException e) {
 			throw new DaoException("Error closing connection: " + this.connection, e);
+		} finally {
+			if (this.preparedStatement != null) {
+				try {
+					this.preparedStatement.close();
+				} catch (final SQLException e) {
+					throw new DaoException("Error closing prepared statement: " + this.preparedStatement, e);
+				}
+			}
 		}
 	}
 
@@ -104,7 +115,8 @@ public class JdbcConnection {
 			}
 		} catch (final SQLException e) {
 			throw new DaoException("Error closing result set: " + aResultSet, e);
+		} finally {
+			this.cleanUp();
 		}
-		this.cleanUp();
 	}
 }
