@@ -115,12 +115,26 @@ public class Select<T> extends Statement {
 	 * @return a mapped object or the defaultWhenNull or null
 	 */
 	public T execute() {
+		return this.execute(true);
+	}
+
+	/**
+	 * Executes the select with or without moving the cursor before delegating to the RowMappers mapRow.
+	 *
+	 * @param aMoveCursor
+	 *            indicates whether the cursor of the result set should be moved, <code>true</code> will cause
+	 *            next() to be invoked on the ResultSet before calling mapRow. When passed <code>false</code> the
+	 *            ResultSet will be passed to mapRow without calling next() and it will be up to the mapRow
+	 *            implementation to move the cursor.
+	 * @return a mapped object or the defaultWhenNull or null
+	 */
+	public T execute(boolean aMoveCursor) {
 		T t = null;
 		ResultSet resultSet = null;
 
 		try {
 			resultSet = this.preparedStatement.executeQuery();
-			if (resultSet.next()) {
+			if (!aMoveCursor || resultSet.next()) {
 				t = this.rowMapper.mapRow(resultSet);
 			}
 		} catch (final SQLException e) {
@@ -136,22 +150,42 @@ public class Select<T> extends Statement {
 	}
 
 	/**
-	 * Executes the select and maps the result to a list of new instances of the
-	 * specified class using the specified row mapper.
+	 * Executes the select and maps the result to a list of new instances of the specified class using the
+	 * specified row mapper.
 	 *
 	 * @return a non-null list containing instances of the specified class.
 	 */
 	public List<T> executeForAll() {
+		return this.executeForAll(true);
+	}
+
+	/**
+	 * Executes the select and maps the result to a list of new instances of the specified class using the
+	 * specified row mapper.
+	 *
+	 * @param aMoveCursor
+	 *            indicates whether the cursor of the result set should be moved, <code>true</code> will cause
+	 *            next() to be invoked on the ResultSet before calling mapRow. When passed <code>false</code> the
+	 *            ResultSet will be passed to mapRow without calling next() and it will be up to the mapRow
+	 *            implementation to move the cursor. The mapRow method will be invoked until the result set
+	 *            is after the last record.
+	 * @return a non-null list containing instances of the specified class.
+	 */
+	public List<T> executeForAll(boolean aMoveCursor) {
 		final List<T> list = new ArrayList<T>();
 		ResultSet resultSet = null;
 
 		try {
 			resultSet = this.preparedStatement.executeQuery();
-
-			while (resultSet.next()) {
-				list.add(this.rowMapper.mapRow(resultSet));
+			if (aMoveCursor) {
+				while (resultSet.next()) {
+					list.add(this.rowMapper.mapRow(resultSet));
+				}
+			} else {
+				while (!resultSet.isAfterLast()) {
+					list.add(this.rowMapper.mapRow(resultSet));
+				}
 			}
-
 		} catch (final SQLException e) {
 			throw new DaoException("Error executing : " + this, e);
 		} finally {
@@ -164,14 +198,14 @@ public class Select<T> extends Statement {
 	/**
 	 * Defines a default value that will be returned instead of a null value.
 	 *
-	 * @param defaultValue the default value
+	 * @param defaultValue
+	 *            the default value
 	 * @return the Statement (for method chaining)
 	 */
 	public Select<T> defaultWhenNull(T defaultValue) {
 		this.defaultWhenNull = defaultValue;
 		return this;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -292,9 +326,9 @@ public class Select<T> extends Statement {
 	 */
 	@Override
 	public String toString() {
-		return "Select [statement=" + this.statement + ", connection=" + this.connection + ", preparedStatement="
-				+ this.preparedStatement + ", rowMapper=" + this.rowMapper + ", defaultWhenNull="
-				+ this.defaultWhenNull + ", parameters=" + this.parameters + "]";
+		return "Select [statement=" + this.statement + ", connection=" + this.connection
+				+ ", preparedStatement=" + this.preparedStatement + ", rowMapper=" + this.rowMapper
+				+ ", defaultWhenNull=" + this.defaultWhenNull + ", parameters=" + this.parameters + "]";
 	}
 
 }

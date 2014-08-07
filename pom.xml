@@ -4,7 +4,7 @@
 
   <groupId>org.jdbcquery</groupId>
   <artifactId>jdbc-query</artifactId>
-  <version>0.4-Snapshot</version>
+  <version>0.5-Snapshot</version>
   <packaging>jar</packaging>
 
   <name>jdbc-query</name>

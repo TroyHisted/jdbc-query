@@ -226,6 +226,14 @@ Person person = query.execute();
 List<Person> people = query.executeAll();
 ```
 
+#### Cursor movement
+By default, when invoking an execute method, the cursor of the result set will be moved before the row mapper
+is called. This behavior can be modified by passing `false` to either of the execute methods. Under this 
+condition it is up to the row mapper to move the cursor. This is useful if you need more control over how a
+object is constructed, if, for example, you need to map multiple rows to a single object. The execute method
+will still only invoke mapRow() once, while executeForAll will repeatedly call mapRow() until the cursor of the
+result set is past the last item.   
+
 ### Executing an Update statement
 There are four methods for running the update, `execute()`, `executeAndReturnKey()`, 
 `executeBatch()` and `executeBatchAndReturnKeys()`. The `execute()` and `executeBatch()` 
@@ -259,4 +267,3 @@ final long[] keys = update.executeBatchAndReturnKeys();
 * Improve the connection clean up
 * Write more tests
 * Batch selects
-* Support mapping multiple rows to a single object
