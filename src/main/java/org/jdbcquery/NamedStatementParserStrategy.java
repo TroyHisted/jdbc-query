@@ -46,13 +46,12 @@ public class NamedStatementParserStrategy {
 		while (i < statement.length) {
 			if (statement[i] == '/') {
 				if (i + 1 < statement.length && statement[i + 1] == '*') {
-					parsedStatement[j++] = ' ';
-					i++; // skip the /
-					i++; // skip the *
+					parsedStatement[j++] = statement[i++]; // the /
+					parsedStatement[j++] = statement[i++]; // the *
 					while (statement[i] != '/' || statement[i - 1] != '*') {
-						i++; // skip the body of the comment
+						parsedStatement[j++] = statement[i++]; // the body of the comment
 					}
-					i++; // skip the closing /
+					parsedStatement[j++] = statement[i++]; // the closing /
 				} else {
 					parsedStatement[j++] = statement[i++]; // add the / since it's not a comment
 				}
