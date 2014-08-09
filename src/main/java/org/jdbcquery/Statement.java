@@ -208,7 +208,7 @@ public abstract class Statement {
 	}
 
 	/**
-	 * Sets a Date into the prepared statement using the specified parameter name.
+	 * Sets a Date into the prepared statement, as a Timestamp, using the specified parameter name.
 	 *
 	 * @param aName
 	 *            the name of the parameter to set
@@ -254,6 +254,54 @@ public abstract class Statement {
 	}
 
 	/**
+	 * Sets an Object into the prepared statement using the specified parameter name.
+	 *
+	 * @param aName
+	 *            the name of the parameter to set
+	 * @param aValue
+	 *            the value to set
+	 * @return the statement (for method chaining)
+	 */
+	public Statement setObject(String aName, Object aValue) {
+		try {
+			for (int i = 0; i < this.getParameters().size(); i++) {
+				if (this.getParameters().get(i).equals(aName)) {
+					this.getPreparedStatement().setObject(i + 1, aValue);
+				}
+			}
+		} catch (final SQLException e) {
+			this.getConnection().cleanUp();
+			throw new DaoException("Error setting " + aName + " to " + aValue, e);
+		}
+		return this;
+	}
+
+	/**
+	 * Sets an Object into the prepared statement as the specified type using the specified parameter name.
+	 *
+	 * @param aName
+	 *            the name of the parameter to set
+	 * @param aValue
+	 *            the value to set
+	 * @param aSqlType
+	 *            the java.sql.Type of the object to set
+	 * @return the statement (for method chaining)
+	 */
+	public Statement setObject(String aName, Object aValue, int aSqlType) {
+		try {
+			for (int i = 0; i < this.getParameters().size(); i++) {
+				if (this.getParameters().get(i).equals(aName)) {
+					this.getPreparedStatement().setObject(i + 1, aValue, aSqlType);
+				}
+			}
+		} catch (final SQLException e) {
+			this.getConnection().cleanUp();
+			throw new DaoException("Error setting " + aName + " to " + aValue, e);
+		}
+		return this;
+	}
+
+	/**
 	 * Sets all of the bean properties into the prepared statement using the bean property name as the parameter
 	 * name.
 	 *
@@ -283,6 +331,5 @@ public abstract class Statement {
 			throw new DaoException("Error getting bean properties from " + aJavaBean, e);
 		}
 		return this;
-
 	}
 }
