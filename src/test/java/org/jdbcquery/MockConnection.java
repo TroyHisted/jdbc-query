@@ -26,6 +26,39 @@ import java.util.concurrent.Executor;
  */
 public class MockConnection implements Connection {
 
+	private boolean open = false;
+	MockPreparedStatement preparedStatement;
+
+	/**
+	 * --------------------------
+	 * Mocked methods
+	 * --------------------------
+	 */
+
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		this.open = true;
+		this.preparedStatement = new MockPreparedStatement();
+		return this.preparedStatement;
+	}
+
+	public void close() throws SQLException {
+		this.open = false;
+	}
+
+	public boolean isClosed() throws SQLException {
+		return !this.open;
+	}
+
+	public MockPreparedStatement getPreparedStatement() {
+		return this.preparedStatement;
+	}
+
+	/**
+	 * --------------------------
+	 * Unimplemented methods
+	 * --------------------------
+	 */
+
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException("This is a mock object");
 	}
@@ -35,10 +68,6 @@ public class MockConnection implements Connection {
 	}
 
 	public Statement createStatement() throws SQLException {
-		throw new UnsupportedOperationException("This is a mock object");
-	}
-
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		throw new UnsupportedOperationException("This is a mock object");
 	}
 
@@ -63,14 +92,6 @@ public class MockConnection implements Connection {
 	}
 
 	public void rollback() throws SQLException {
-		throw new UnsupportedOperationException("This is a mock object");
-	}
-
-	public void close() throws SQLException {
-		throw new UnsupportedOperationException("This is a mock object");
-	}
-
-	public boolean isClosed() throws SQLException {
 		throw new UnsupportedOperationException("This is a mock object");
 	}
 

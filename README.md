@@ -264,6 +264,5 @@ final long[] keys = update.executeBatchAndReturnKeys();
 
 ### TODO
 * Add the remaining setX methods
-* Improve the connection clean up
-* Write more tests
-* Batch selects
+
+  
