@@ -35,9 +35,12 @@ public class JdbcConnection {
 	 * Constructs a DaoConnection with an SQL connection object.
 	 *
 	 * @param aConnection
-	 *            the SQL connection to use
+	 *            the SQL connection to use (not null)
 	 */
 	JdbcConnection(Connection aConnection) {
+		if (aConnection == null) {
+			throw new DaoException("Connection was null");
+		}
 		this.connection = aConnection;
 	}
 
