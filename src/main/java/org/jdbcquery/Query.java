@@ -15,8 +15,6 @@
  */
 package org.jdbcquery;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Utility class for generating SQL statements.
@@ -24,35 +22,6 @@ import java.sql.SQLException;
  * @author Troy Histed
  */
 public final class Query {
-
-	private static RowMapper<Integer> INTEGER_MAPPER = new RowMapper<Integer>() {
-		@Override
-		protected Integer mapRow(ResultSet aResultSet) throws SQLException {
-			final int value = aResultSet.getInt(1);
-			if (aResultSet.wasNull()) {
-				return null;
-			}
-			return Integer.valueOf(value);
-		}
-	};
-
-	private static RowMapper<Long> LONG_MAPPER = new RowMapper<Long>() {
-		@Override
-		protected Long mapRow(ResultSet aResultSet) throws SQLException {
-			final long value = aResultSet.getLong(1);
-			if (aResultSet.wasNull()) {
-				return null;
-			}
-			return Long.valueOf(value);
-		}
-	};
-
-	private static RowMapper<String> STRING_MAPPER = new RowMapper<String>() {
-		@Override
-		protected String mapRow(ResultSet aResultSet) throws SQLException {
-			return aResultSet.getString(1);
-		}
-	};
 
 	/**
 	 * Static constructor for an Update.
@@ -107,32 +76,32 @@ public final class Query {
 	}
 
 	/**
-	 * Static constructor for building a select for an Object.
+	 * Static constructor for building a select for a java bean.
 	 *
 	 * @param aStatement
 	 *            the select statement to execute
-	 * @param aBeanRowMapper
-	 *            the bean row mapping to use
+	 * @param aBeanClass
+	 *            the bean class to map to
 	 * @return the Select
 	 */
-	public static <T> Select<T> forBean(String aStatement, BeanRowMapper<T> aBeanRowMapper) {
-		return new Select<T>(aStatement, aBeanRowMapper);
+	public static <T> Select<T> forBean(String aStatement, Class<T> aBeanClass) {
+		return new Select<T>(aStatement, BeanRowMapper.forClass(aBeanClass));
 	}
 
 	/**
-	 * Static constructor for building a select for an Object.
+	 * Static constructor for building a select for a java bean.
 	 *
 	 * @param aStatement
 	 *            the select statement to execute
-	 * @param aBeanRowMapper
-	 *            the bean row mapping to use
+	 * @param aBeanClass
+	 *            the bean class to map to
 	 * @param aConnectionName
 	 *            the connection name to use
 	 * @return the Select
 	 */
-	public static <T> Select<T> forBean(String aStatement, BeanRowMapper<T> aBeanRowMapper,
+	public static <T> Select<T> forBean(String aStatement, Class<T> aBeanClass,
 			String aConnectionName) {
-		return new Select<T>(aStatement, aBeanRowMapper, aConnectionName);
+		return new Select<T>(aStatement, BeanRowMapper.forClass(aBeanClass), aConnectionName);
 	}
 
 	/**
@@ -143,7 +112,7 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<Integer> forInteger(String aStatement) {
-		return new Select<Integer>(aStatement, INTEGER_MAPPER);
+		return new Select<Integer>(aStatement, RowMappers.INTEGER_MAPPER);
 	}
 
 	/**
@@ -156,7 +125,7 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<Integer> forInteger(String aStatement, String aConnectionName) {
-		return new Select<Integer>(aStatement, INTEGER_MAPPER, aConnectionName);
+		return new Select<Integer>(aStatement, RowMappers.INTEGER_MAPPER, aConnectionName);
 	}
 
 	/**
@@ -167,7 +136,7 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<Long> forLong(String aStatement) {
-		return new Select<Long>(aStatement, LONG_MAPPER);
+		return new Select<Long>(aStatement, RowMappers.LONG_MAPPER);
 	}
 
 	/**
@@ -180,7 +149,31 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<Long> forLong(String aStatement, String aConnectionName) {
-		return new Select<Long>(aStatement, LONG_MAPPER, aConnectionName);
+		return new Select<Long>(aStatement, RowMappers.LONG_MAPPER, aConnectionName);
+	}
+
+	/**
+	 * Static constructor for building a select for a Double.
+	 *
+	 * @param aStatement
+	 *            the select statement to execute
+	 * @return the Select
+	 */
+	public static Select<Double> forDouble(String aStatement) {
+		return new Select<Double>(aStatement, RowMappers.DOUBLE_MAPPER);
+	}
+
+	/**
+	 * Static constructor for building a select for a Double.
+	 *
+	 * @param aStatement
+	 *            the select statement to execute
+	 * @param aConnectionName
+	 *            the connection name to use
+	 * @return the Select
+	 */
+	public static Select<Double> forDouble(String aStatement, String aConnectionName) {
+		return new Select<Double>(aStatement, RowMappers.DOUBLE_MAPPER, aConnectionName);
 	}
 
 	/**
@@ -191,7 +184,7 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<String> forString(String aStatement) {
-		return new Select<String>(aStatement, STRING_MAPPER);
+		return new Select<String>(aStatement, RowMappers.STRING_MAPPER);
 	}
 
 	/**
@@ -204,6 +197,6 @@ public final class Query {
 	 * @return the Select
 	 */
 	public static Select<String> forString(String aStatement, String aConnectionName) {
-		return new Select<String>(aStatement, STRING_MAPPER, aConnectionName);
+		return new Select<String>(aStatement, RowMappers.STRING_MAPPER, aConnectionName);
 	}
 }
