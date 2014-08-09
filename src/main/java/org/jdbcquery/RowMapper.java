@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Handles converting a single row from a result set into an object of type T.
+ * Handles converting a row from a result set into an object of type T.
  *
  * @author Troy Histed
  *
@@ -28,7 +28,7 @@ import java.sql.SQLException;
 public abstract class RowMapper<T> {
 
 	/**
-	 * Maps a single result set record to an instance of the query type.
+	 * Maps a result set record to an instance of the query type.
 	 *
 	 * @param aResultSet
 	 *            the result set record to process
