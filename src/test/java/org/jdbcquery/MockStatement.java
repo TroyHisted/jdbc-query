@@ -3,6 +3,11 @@ package org.jdbcquery;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A mocked statement.
+ *
+ * @author Troy Histed
+ */
 public class MockStatement extends Statement {
 
 	private List<String> parameters = new ArrayList<String>();

@@ -99,31 +99,31 @@ public class MockPreparedStatement implements PreparedStatement {
 	}
 
 	public void setBoolean(int parameterIndex, boolean x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Boolean.valueOf(x));
 	}
 
 	public void setByte(int parameterIndex, byte x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Byte.valueOf(x));
 	}
 
 	public void setShort(int parameterIndex, short x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Short.valueOf(x));
 	}
 
 	public void setInt(int parameterIndex, int x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Integer.valueOf(x));
 	}
 
 	public void setLong(int parameterIndex, long x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Long.valueOf(x));
 	}
 
 	public void setFloat(int parameterIndex, float x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Float.valueOf(x));
 	}
 
 	public void setDouble(int parameterIndex, double x) throws SQLException {
-		this.values.put(Integer.valueOf(parameterIndex), x);
+		this.values.put(Integer.valueOf(parameterIndex), Double.valueOf(x));
 	}
 
 	public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {

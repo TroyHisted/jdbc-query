@@ -25,6 +25,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify next can be called once and subsequently isAfterLast is true.
 	 *
 	 * @throws SQLException
 	 */
@@ -35,6 +36,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that when a result set has one row that next can be called once and isAfterLast will be false.
 	 *
 	 * @throws SQLException
 	 */
@@ -46,6 +48,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that calling next() when past the end of the result set will cause an SQLException.
 	 *
 	 * @throws SQLException
 	 */
@@ -58,6 +61,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that a ResultSet is open by default.
 	 *
 	 * @throws SQLException
 	 */
@@ -67,6 +71,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that after a result set is closed the isClosed method returns true;
 	 *
 	 * @throws SQLException
 	 */
@@ -77,6 +82,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that the getRow() method keeps track of the current row index.
 	 *
 	 * @throws SQLException
 	 */
@@ -92,6 +98,7 @@ public class MockResultSetTest {
 
 
 	/**
+	 * Verify that the getString method will actually return the test string that was added to the result set.
 	 *
 	 * @throws SQLException
 	 */
@@ -106,6 +113,7 @@ public class MockResultSetTest {
 	}
 
 	/**
+	 * Verify that wasNull returns true if getString returned null.
 	 *
 	 * @throws SQLException
 	 */
@@ -117,5 +125,6 @@ public class MockResultSetTest {
 
 		this.resultSet.next();
 		Assert.assertNull(this.resultSet.getString("col1"));
+		Assert.assertTrue(this.resultSet.wasNull());
 	}
 }

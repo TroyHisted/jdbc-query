@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the Statement Object.
+ * Test the Statement Class.
  *
  * @author Troy Histed
  */
@@ -61,8 +61,6 @@ public class StatementTest {
 		Assert.assertEquals(this.expected, this.statement.getPreparedStatement().getValues());
 	}
 
-
-
 	/**
 	 * Test the setBean method.
 	 */
@@ -89,5 +87,4 @@ public class StatementTest {
 
 		Assert.assertEquals(this.expected, this.statement.getPreparedStatement().getValues());
 	}
-
 }

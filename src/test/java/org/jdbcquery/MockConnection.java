@@ -49,6 +49,9 @@ public class MockConnection implements Connection {
 		return !this.open;
 	}
 
+	/**
+	 * @return the mocked prepared statement
+	 */
 	public MockPreparedStatement getPreparedStatement() {
 		return this.preparedStatement;
 	}

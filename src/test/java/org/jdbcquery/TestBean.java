@@ -1,5 +1,10 @@
 package org.jdbcquery;
 
+/**
+ * Generic bean object that can be used in unit tests.
+ *
+ * @author Troy Histed
+ */
 public class TestBean {
 
 	String param1;

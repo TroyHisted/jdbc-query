@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the Select Statement Object.
+ * Test the Select Class.
  *
  * @author Troy Histed
  */
@@ -45,17 +45,9 @@ public class SelectTest {
 	}
 
 	/**
+	 * Verify the execute method works and closes all resources.
 	 *
-	 */
-	@Test
-	public void test() {
-		Assert.assertNotNull(this.select);
-		Assert.assertNotNull(this.connection);
-	}
-
-	/**
 	 * @throws SQLException
-	 *
 	 */
 	@Test
 	public void testExecute() throws SQLException {
@@ -67,11 +59,12 @@ public class SelectTest {
 	}
 
 	/**
-	 * @throws SQLException
+	 * Verify the executeForAll method works and closes all resources.
 	 *
+	 * @throws SQLException
 	 */
 	@Test
-	public void testExecuteAll() throws SQLException {
+	public void testExecuteForAll() throws SQLException {
 		final List<String> values = this.select.executeForAll();
 		Assert.assertEquals("test", values.get(0));
 		Assert.assertTrue(this.connection.isClosed());
@@ -80,8 +73,9 @@ public class SelectTest {
 	}
 
 	/**
-	 * @throws SQLException
+	 * Verify that when prepareStatement throws an exception that all the resources still get closed.
 	 *
+	 * @throws SQLException
 	 */
 	@SuppressWarnings("resource")
 	@Test(expected=DaoException.class)
@@ -96,15 +90,15 @@ public class SelectTest {
 
 		this.select = new MockSelect<String>("Select...", this.rowMapper, badConnection);
 
-
 		Assert.assertTrue(this.connection.isClosed());
 		Assert.assertTrue(this.connection.getPreparedStatement().isClosed());
 		Assert.assertTrue(this.connection.getPreparedStatement().getResultSet().isClosed());
 	}
 
 	/**
-	 * @throws SQLException
+	 * Verify that when prepareStatement throws an exception that all the resources still get closed.
 	 *
+	 * @throws SQLException
 	 */
 	@SuppressWarnings("resource")
 	@Test(expected=NullPointerException.class)
@@ -125,12 +119,12 @@ public class SelectTest {
 	}
 
 	/**
-	 * @throws SQLException
+	 * Verify that when a setXXX method throws an exception that all the resources still get closed.
 	 *
+	 * @throws SQLException
 	 */
 	@Test(expected=NullPointerException.class)
 	public void testExceptionSettingValue() throws SQLException {
-
 
 		this.select = new MockSelect<String>("Select...", this.rowMapper, this.connection) {
 			@Override
@@ -144,6 +138,37 @@ public class SelectTest {
 		Assert.assertTrue(this.connection.isClosed());
 		Assert.assertTrue(this.connection.getPreparedStatement().isClosed());
 		Assert.assertTrue(this.connection.getPreparedStatement().getResultSet().isClosed());
+	}
+
+	/**
+	 * Verify that when the JdbcConnection can't connect, a DaoException is thrown.
+	 *
+	 * @throws SQLException
+	 */
+	@Test(expected=DaoException.class)
+	public void testExceptionConnecting() throws SQLException {
+
+		final Select<String> select = new Select<String>(
+				"Select 'test' from table where something = :param1", this.rowMapper) {
+			@Override
+			protected JdbcConnection connect(String aConnectionName) throws SQLException {
+				throw new SQLException("Mocking failed db connection");
+			}
+		};
+
+		select.execute();
+	}
+
+	/**
+	 * Verify that when a connection is null that a DaoException is thrown.
+	 *
+	 * @throws SQLException
+	 */
+	@Test(expected=DaoException.class)
+	public void testNullConnection() throws SQLException {
+
+		final MockSelect<String> select = new MockSelect<String>(
+				"Select 'test' from table where something = :param1", this.rowMapper, null);
 	}
 
 }
