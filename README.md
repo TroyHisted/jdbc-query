@@ -2,16 +2,13 @@ jdbc-query
 ==========
 [![Build Status](https://travis-ci.org/TroyHisted/jdbc-query.svg?branch=master)](https://travis-ci.org/TroyHisted/jdbc-query)
 
-JDBC query builder that supports named parameters and reduces boilerplate code.
-
-**IMPORTANT: This is beta software, there will be bugs.** 
+Java SQL statement builder that supports named parameters and reduces JDBC boilerplate code.
 
 ## Features
-* Named parameters
-* Automatic housekeeping
-* Removes boilerplate
-* Works with POJOs
-* Works with JavaBeans
+* Resource management
+* Exception handling
+* Named parameters in SQL
+* Supports POJOs and JavaBeans
 
 ## Examples
 
@@ -192,7 +189,9 @@ treating the column names as bean properties. The BeanRowMapper comes with an im
 `mapRow(ResultSet)`, but requires the implementation of a `newBeanInstance()` method which should
 return a new instance of the bean you're trying to map to. The BeanRowMapper also includes a convenient static 
 `forClass(Class<T>)` method that creates a special BeanRowMapper using the getInstance() method of the
-specified class to implement the newBeanInstance() method.
+specified class to implement the newBeanInstance() method. The Query class even provides a shorthand way to 
+create the row mapper through the `forBean(String, Class)` method which will create the BeanRowMapper for 
+the specified class.
 
 ```java
 return Query.forBean(
@@ -204,7 +203,7 @@ return Query.forBean(
 		+ "    longitude AS 'coordinates.longitude' "
 		+ "  FROM geo_location "
 		+ "  WHERE zip = :zip",
-		BeanRowMapper.forClass(Location.class))
+		Location.class)
 	.set("zip", aZipCode)
 	.execute();
 ```
@@ -261,8 +260,5 @@ final long[] keys = update.executeBatchAndReturnKeys();
 
 ## License
 [Apache License, Version 2.0](http://opensource.org/licenses/Apache-2.0)
-
-### TODO
-* Add the remaining setX methods
 
   
