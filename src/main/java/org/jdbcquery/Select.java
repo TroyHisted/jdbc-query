@@ -71,14 +71,18 @@ public class Select<T> extends Statement {
 		this.parameters = preparedSelect.getParameters();
 
 		try {
-			this.connection = JdbcConnection.connect(aConnectionName);
+			this.connection = this.connect(aConnectionName);
 			this.preparedStatement = this.connection.prepareStatement(preparedSelect.getStatement());
-		} catch (final RuntimeException e) {
-			this.connection.cleanUp();
-			throw e;
 		} catch (final SQLException e) {
-			this.connection.cleanUp();
+			if (this.connection != null) {
+				this.connection.cleanUp();
+			}
 			throw new DaoException("Error occured while creating connection to datasource.", e);
+		} catch (final RuntimeException e) {
+			if (this.connection != null) {
+				this.connection.cleanUp();
+			}
+			throw e;
 		}
 	}
 
@@ -97,7 +101,7 @@ public class Select<T> extends Statement {
 		this.statement = aSelect;
 		this.rowMapper = aRowMapper;
 		this.connection = new JdbcConnection(aConnection);
-		
+
 		final ParsedNamedStatement preparedSelect = Select.STATEMENT_PARSER.prepareNamedStatement(aSelect);
 		this.parameters = preparedSelect.getParameters();
 
@@ -107,6 +111,18 @@ public class Select<T> extends Statement {
 			this.connection.cleanUp();
 			throw new DaoException("Error occured while preparing statement: " + aSelect, e);
 		}
+	}
+
+	/**
+	 * Gets a connection.
+	 *
+	 * @param aConnectionName
+	 *            the connection name to use
+	 * @return a connection
+	 * @throws SQLException
+	 */
+	protected JdbcConnection connect(String aConnectionName) throws SQLException {
+		return JdbcConnection.connect(aConnectionName);
 	}
 
 	/**
@@ -128,6 +144,7 @@ public class Select<T> extends Statement {
 	 *            implementation to move the cursor.
 	 * @return a mapped object or the defaultWhenNull or null
 	 */
+	@SuppressWarnings("resource")
 	public T execute(boolean aMoveCursor) {
 		T t = null;
 		ResultSet resultSet = null;
@@ -167,10 +184,11 @@ public class Select<T> extends Statement {
 	 *            indicates whether the cursor of the result set should be moved, <code>true</code> will cause
 	 *            next() to be invoked on the ResultSet before calling mapRow. When passed <code>false</code> the
 	 *            ResultSet will be passed to mapRow without calling next() and it will be up to the mapRow
-	 *            implementation to move the cursor. The mapRow method will be invoked until the result set
-	 *            is after the last record.
+	 *            implementation to move the cursor. The mapRow method will be invoked until the result set is
+	 *            after the last record.
 	 * @return a non-null list containing instances of the specified class.
 	 */
+	@SuppressWarnings("resource")
 	public List<T> executeForAll(boolean aMoveCursor) {
 		final List<T> list = new ArrayList<T>();
 		ResultSet resultSet = null;
@@ -286,6 +304,24 @@ public class Select<T> extends Statement {
 	@Override
 	public Select<T> setNull(String aName, int aSqlType) {
 		return (Select<T>) super.set(aName, aSqlType);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Select<T> setObject(String aName, Object aValue) {
+		return (Select<T>) super.setObject(aName, aValue);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Select<T> setObject(String aName, Object aValue, int aSqlType) {
+		return (Select<T>) super.setObject(aName, aValue, aSqlType);
 	}
 
 	/**

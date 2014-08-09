@@ -56,24 +56,24 @@ public class Update extends Statement {
 	public Update(String aStatement, String aConnectionName) {
 
 		this.statement = aStatement;
-		
+
 		final ParsedNamedStatement preparedStatement = Update.STATEMENT_PARSER.prepareNamedStatement(aStatement);
 		this.parameters = preparedStatement.getParameters();
 
 		try {
-			this.connection = JdbcConnection.connect(aConnectionName);
+			this.connection = this.connect(aConnectionName);
 			this.preparedStatement = this.connection.prepareStatementWithGeneratedKeys(preparedStatement
 					.getStatement());
-		} catch (final RuntimeException e) {
-			if (this.connection != null) {
-				this.connection.cleanUp();
-			}
-			throw e;
 		} catch (final SQLException e) {
 			if (this.connection != null) {
 				this.connection.cleanUp();
 			}
 			throw new DaoException("Error creating connection and preparing statement: " + aStatement, e);
+		} catch (final RuntimeException e) {
+			if (this.connection != null) {
+				this.connection.cleanUp();
+			}
+			throw e;
 		}
 	}
 
@@ -89,7 +89,7 @@ public class Update extends Statement {
 
 		this.statement = aStatement;
 		this.connection = new JdbcConnection(aConnection);
-		
+
 		final ParsedNamedStatement preparedStatement = Update.STATEMENT_PARSER.prepareNamedStatement(aStatement);
 		this.parameters = preparedStatement.getParameters();
 
@@ -102,6 +102,18 @@ public class Update extends Statement {
 			}
 			throw new DaoException("Error preparing statement: " + aStatement, e);
 		}
+	}
+
+	/**
+	 * Gets a connection.
+	 *
+	 * @param aConnectionName
+	 *            the connection name to use
+	 * @return a connection
+	 * @throws SQLException
+	 */
+	protected JdbcConnection connect(String aConnectionName) throws SQLException {
+		return JdbcConnection.connect(aConnectionName);
 	}
 
 	/**
@@ -124,10 +136,11 @@ public class Update extends Statement {
 	 *
 	 * @return the auto-generated key
 	 */
+	@SuppressWarnings("resource")
 	public long executeAndReturnKey() {
 		ResultSet resultSet = null;
 		try {
-			final int updateCount = this.preparedStatement.executeUpdate();
+			this.preparedStatement.executeUpdate();
 			resultSet = this.preparedStatement.getGeneratedKeys();
 			if (resultSet.next()) {
 				return resultSet.getLong(1);
@@ -172,6 +185,7 @@ public class Update extends Statement {
 	 *
 	 * @return array containing the auto generated keys for each batch statement
 	 */
+	@SuppressWarnings("resource")
 	public long[] executeBatchAndReturnKeys() {
 		ResultSet resultSet = null;
 		try {
@@ -267,6 +281,22 @@ public class Update extends Statement {
 	@Override
 	public Update setNull(String aName, int aSqlType) {
 		return (Update) super.set(aName, aSqlType);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Update setObject(String aName, Object aValue) {
+		return (Update) super.setObject(aName, aValue);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Update setObject(String aName, Object aValue, int aSqlType) {
+		return (Update) super.setObject(aName, aValue, aSqlType);
 	}
 
 	/**
